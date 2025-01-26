@@ -9,6 +9,57 @@ import string
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
+# Page configuration and styling
+st.set_page_config(
+    page_title="SMS Spam Detector",
+    page_icon="📱",
+    layout="centered"
+)
+
+# Custom CSS
+st.markdown("""
+    <style>
+    .main {
+        background-color: #1a1a1a;
+    }
+    .stTitle {
+        color: #00b4d8;
+        text-align: center;
+        padding-bottom: 20px;
+    }
+    .stHeader {
+        color: #ffffff;
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
+    }
+    .spam {
+        background-color: #dc3545;
+    }
+    .not-spam {
+        background-color: #00b4d8;
+    }
+    .credit-text {
+        text-align: center;
+        color: #90e0ef;
+        font-style: italic;
+    }
+    .stTextInput {
+        background-color: #2d2d2d;
+        border-radius: 5px;
+        padding: 10px;
+        color: #ffffff;
+    }
+    .stButton>button {
+        background-color: #00b4d8;
+        color: white;
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 ps = PorterStemmer()
 
 
@@ -40,22 +91,41 @@ def transform_text(text):
 tk = pickle.load(open("vectorizer.pkl", 'rb'))
 model = pickle.load(open("model.pkl", 'rb'))
 
-st.title("SMS Spam Detection Model")
-st.write("*Made by Edunet Foundation*")
-    
+# Centered title with emoji
+st.markdown("<h1 style='text-align: center;'>📱 SMS Spam Detection Model</h1>", unsafe_allow_html=True)
+st.markdown("<p class='credit-text'>Made by Anand S</p>", unsafe_allow_html=True)
 
-input_sms = st.text_input("Enter the SMS")
+# Add some spacing
+st.write("")
+st.write("")
 
-if st.button('Predict'):
+# Create columns for better layout
+col1, col2, col3 = st.columns([1,2,1])
+with col2:
+    input_sms = st.text_area("Enter the SMS message:", height=100)
+    predict_button = st.button('Analyze Message')
 
-    # 1. preprocess
-    transformed_sms = transform_text(input_sms)
-    # 2. vectorize
-    vector_input = tk.transform([transformed_sms])
-    # 3. predict
-    result = model.predict(vector_input)[0]
-    # 4. Display
-    if result == 1:
-        st.header("Spam")
-    else:
-        st.header("Not Spam")
+# Add some spacing
+st.write("")
+
+if predict_button and input_sms:
+    # Create a spinner while processing
+    with st.spinner('Analyzing message...'):
+        # 1. preprocess
+        transformed_sms = transform_text(input_sms)
+        # 2. vectorize
+        vector_input = tk.transform([transformed_sms])
+        # 3. predict
+        result = model.predict(vector_input)[0]
+        # 4. Display
+        st.write("")
+        if result == 1:
+            st.markdown("<h2 class='stHeader spam'>🚨 SPAM DETECTED!</h2>", unsafe_allow_html=True)
+        else:
+            st.markdown("<h2 class='stHeader not-spam'>✅ NOT SPAM</h2>", unsafe_allow_html=True)
+elif predict_button and not input_sms:
+    st.error("Please enter a message to analyze!")
+
+# Add footer
+st.markdown("---")
+st.markdown("<p class='credit-text'>© 2024 SMS Spam Detection System | Developed by Anand S</p>", unsafe_allow_html=True)
